@@ -11,22 +11,22 @@ share {
     version => qr/([0-9\.]+)/,
   );
   plugin Extract => 'tar.gz';
-  my $set_prefix = sub {
-    my ($build) = @_;
-    $ENV{prefix} = $build->install_prop->{prefix};
-  };
   if( $^O ne 'MSWin32' ) {
     build [
-      $set_prefix,
-      './configure',
+      './configure --prefix=%{.install.prefix}',
       '%{make}',
       '%{make} install',
     ];
   } elsif( $^O eq 'MSWin32' && $Config{cc} eq 'gcc' ) {
+    my @PATH_ARGS = (
+      'prefix=%{.install.prefix}',
+      'INCLUDE_PATH=%{.install.prefix}/include',
+      'LIBRARY_PATH=%{.install.prefix}/lib',
+      'BINARY_PATH=%{.install.prefix}/bin',
+    );
     build [
-      $set_prefix,
-      [ '%{make}' , qw(-f win32/Makefile.gcc) ],
-      [ '%{make}' , qw(-f win32/Makefile.gcc), 'install' ],
+      [ '%{make}' , qw(-f win32/Makefile.gcc), @PATH_ARGS ],
+      [ '%{make}' , qw(-f win32/Makefile.gcc), @PATH_ARGS, 'install' ],
     ];
   }
   plugin 'Gather::IsolateDynamic';

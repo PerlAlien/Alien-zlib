@@ -13,6 +13,9 @@ share {
   plugin Extract => 'tar.gz';
   if( $^O ne 'MSWin32' ) {
     build [
+      sub {
+        $ENV{CFLAGS} = '-fPIC';
+      },
       './configure --prefix=%{.install.prefix}',
       '%{make}',
       '%{make} install',

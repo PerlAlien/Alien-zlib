@@ -1,0 +1,33 @@
+use alienfile;
+
+use Config;
+
+plugin PkgConfig => 'zlib';
+
+share {
+  start_url 'https://zlib.net/';
+  plugin Download => (
+    filter  => qr/^zlib.*\.tar\.gz$/,
+    version => qr/([0-9\.]+)/,
+  );
+  plugin Extract => 'tar.gz';
+  my $set_prefix = sub {
+    my ($build) = @_;
+    $ENV{prefix} = $build->install_prop->{prefix};
+  };
+  if( $^O ne 'MSWin32' ) {
+    build [
+      $set_prefix,
+      './configure',
+      '%{make}',
+      '%{make} install',
+    ];
+  } elsif( $^O eq 'MSWin32' && $Config{cc} eq 'gcc' ) {
+    build [
+      $set_prefix,
+      [ '%{make}' , qw(-f win32/Makefile.gcc) ],
+      [ '%{make}' , qw(-f win32/Makefile.gcc), 'install' ],
+    ];
+  }
+  plugin 'Gather::IsolateDynamic';
+}

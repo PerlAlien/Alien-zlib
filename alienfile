@@ -27,9 +27,13 @@ share {
       'LIBRARY_PATH=%{.install.prefix}/lib',
       'BINARY_PATH=%{.install.prefix}/bin',
     );
+    my @SHARED_ARGS = ( 'SHARED_MODE=1', );
+    my @MAKE_ARGS = (
+      qw(-f win32/Makefile.gcc), @PATH_ARGS, @SHARED_ARGS
+    );
     build [
-      [ '%{make}' , qw(-f win32/Makefile.gcc), @PATH_ARGS ],
-      [ '%{make}' , qw(-f win32/Makefile.gcc), @PATH_ARGS, 'install' ],
+      [ '%{make}' , @MAKE_ARGS,  ],
+      [ '%{make}' , @MAKE_ARGS, 'install' ],
     ];
   }
   plugin 'Gather::IsolateDynamic';
